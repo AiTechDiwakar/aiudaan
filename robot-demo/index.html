@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#101827">
+<title>AI Udaan Robot — Prototype v0.2</title>
+<style>
+:root{--bg:#0b1020;--panel:#131d31;--line:#263650;--cyan:#68e1fd;--orange:#ff9c55;--text:#f4f7ff;--muted:#aab7cf}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(circle at 50% 0,#1b3150 0,#0b1020 58%);color:var(--text);font:16px/1.5 system-ui,-apple-system,Segoe UI,sans-serif;min-height:100vh}
+main{max-width:960px;margin:auto;padding:22px}.top{display:flex;align-items:center;gap:12px}.logo{width:46px;height:46px;border-radius:15px;background:linear-gradient(135deg,var(--cyan),#8b7cff);display:grid;place-items:center;color:#08111e;font-size:24px;font-weight:900}.top h1{font-size:clamp(22px,4vw,32px);margin:0}.top p{margin:2px 0;color:var(--muted);font-size:14px}
+.layout{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:22px}.panel{background:rgba(19,29,49,.88);border:1px solid var(--line);border-radius:22px;padding:20px;box-shadow:0 18px 60px #0002}
+.stage{min-height:400px;display:flex;flex-direction:column;align-items:center;justify-content:center;overflow:hidden;position:relative;background:radial-gradient(ellipse at 50% 70%,#243b5c 0,#111a2c 52%,#101827 100%)}
+.stage:after{content:"";position:absolute;width:190px;height:18px;bottom:44px;border-radius:50%;background:#020711;filter:blur(9px);opacity:.8}
+.robot{position:relative;z-index:1;width:180px;height:245px;animation:bob 2.2s ease-in-out infinite;transform-origin:50% 100%}
+.head{position:absolute;top:12px;left:30px;width:120px;height:100px;border:4px solid #a8c3d8;border-radius:34px 34px 28px 28px;background:linear-gradient(145deg,#f3f8ff,#9fb7cc);box-shadow:inset -9px -8px 0 #7893aa,0 0 30px #68e1fd22}
+.ear{position:absolute;top:45px;width:18px;height:34px;background:var(--orange);border:3px solid #ffd2a9;border-radius:9px}.ear.left{left:20px}.ear.right{right:20px}
+.face{position:absolute;inset:20px 13px 18px;border-radius:20px;background:#15283b;display:flex;align-items:center;justify-content:center;gap:20px;box-shadow:inset 0 0 18px #0009}
+.eye{width:19px;height:26px;background:var(--cyan);border-radius:12px;box-shadow:0 0 14px #68e1fd;animation:blink 4s infinite}
+.mouth{position:absolute;width:29px;height:7px;border-radius:8px;background:var(--orange);bottom:15px;left:42px;transition:all .15s}
+.robot.talking .mouth{height:18px;width:22px;left:46px;border-radius:50%;animation:talk .18s infinite alternate}
+.neck{position:absolute;top:110px;left:77px;width:26px;height:22px;background:#829bb0;border-radius:6px}
+.body{position:absolute;top:126px;left:40px;width:100px;height:78px;border:4px solid #a8c3d8;border-radius:24px 24px 20px 20px;background:linear-gradient(135deg,#e6f0f8,#829db4);box-shadow:inset -8px -6px 0 #6e879e}
+.core{position:absolute;top:19px;left:29px;width:34px;height:34px;border:4px solid #a5f2ff;border-radius:50%;background:#163f59;box-shadow:0 0 20px #68e1fd}
+.core:after{content:"";position:absolute;inset:8px;border-radius:50%;background:var(--cyan);box-shadow:0 0 10px var(--cyan)}
+.arm{position:absolute;top:139px;width:22px;height:64px;border:4px solid #9bb5ca;background:#c9d8e5;border-radius:14px;transform-origin:top center}
+.arm.left{left:21px;transform:rotate(18deg)}.arm.right{right:21px;transform:rotate(-18deg)}
+.robot.wave .arm.right{animation:wave .45s ease-in-out 4}
+.leg{position:absolute;top:198px;width:26px;height:43px;background:#8199af;border:4px solid #b4c9d9;border-radius:10px 10px 8px 8px}
+.leg.left{left:54px}.leg.right{right:54px}
+.foot{position:absolute;bottom:0;width:39px;height:14px;background:var(--orange);border-radius:8px 12px 7px 7px}.foot.left{left:45px}.foot.right{right:45px}
+.caption{z-index:2;color:var(--muted);font-size:13px;margin-top:24px}
+h2{font-size:19px;margin:0 0 12px}p{margin:8px 0}.status{font-size:13px;color:var(--cyan);margin-bottom:10px}.chat{height:230px;overflow:auto;background:#0b1322;border:1px solid var(--line);border-radius:14px;padding:12px;margin:12px 0}.msg{margin:0 0 10px;white-space:pre-wrap;overflow-wrap:anywhere}.msg b{color:var(--cyan)}.controls{display:flex;gap:8px;flex-wrap:wrap}.inputrow{display:flex;gap:8px;margin-top:10px}.inputrow input{min-width:0;flex:1}
+input{width:100%;background:#0b1322;color:var(--text);border:1px solid var(--line);border-radius:12px;padding:12px;font:inherit}
+button{cursor:pointer;border:0;border-radius:12px;padding:11px 14px;background:var(--cyan);color:#06111c;font:700 14px system-ui}.secondary{background:#24334b;color:var(--text);border:1px solid #3b4d69}.small{font-size:12px;color:var(--muted)}.quick{display:flex;flex-wrap:wrap;gap:7px;margin-top:12px}.quick button{padding:8px 10px;font-weight:600}
+.note{margin-top:18px;padding:14px 16px;border:1px solid #4c422e;background:#282316;border-radius:14px;color:#f7dfae;font-size:14px}
+@keyframes bob{0%,100%{transform:translateY(0) rotate(-1deg)}50%{transform:translateY(-9px) rotate(1deg)}}@keyframes blink{0%,44%,48%,100%{transform:scaleY(1)}46%{transform:scaleY(.08)}}@keyframes talk{from{transform:scaleY(.6)}to{transform:scaleY(1.3)}}@keyframes wave{0%,100%{transform:rotate(-18deg)}50%{transform:rotate(-65deg)}}
+@media(max-width:720px){main{padding:14px}.layout{grid-template-columns:1fr}.stage{min-height:355px}.chat{height:190px}}
+</style>
+</head>
+<body>
+<main>
+<header class="top"><div class="logo">U</div><div><h1>AI Udaan Robot</h1><p>Your first animated + voice assistant prototype</p></div></header>
+<div class="layout">
+<section class="panel stage" aria-label="Animated robot preview">
+  <div class="robot" id="robot">
+    <div class="ear left"></div><div class="ear right"></div>
+    <div class="head"><div class="face"><div class="eye"></div><div class="eye"></div><div class="mouth" id="mouth"></div></div></div>
+    <div class="neck"></div><div class="body"><div class="core"></div></div>
+    <div class="arm left"></div><div class="arm right"></div>
+    <div class="leg left"></div><div class="leg right"></div><div class="foot left"></div><div class="foot right"></div>
+  </div>
+  <div class="caption">UDAAN-01 • animated demo</div>
+</section>
+<section class="panel">
+  <h2>Talk to your robot</h2><div class="status" id="status">● Ready — try a message</div>
+  <div class="chat" id="chat" aria-live="polite"><p class="msg"><b>Udaan:</b> Namaste! Main AI Udaan ka demo robot hoon. Aap type karke ya microphone se baat kar sakte hain.</p></div>
+  <div class="inputrow"><input id="prompt" placeholder="Ask me something…" autocomplete="off" maxlength="1000" aria-label="Ask your robot something"><button id="send">Send</button></div>
+  <div class="controls" style="margin-top:9px"><button id="mic" class="secondary">🎙 Start voice</button><button id="stop" class="secondary">🔇 Stop speaking</button><button id="clear" class="secondary">Clear chat</button></div>
+  <div class="quick"><button class="secondary" data-msg="Introduce yourself">Introduce</button><button class="secondary" data-msg="Tell me a joke">Joke</button><button class="secondary" data-msg="What can you do?">Capabilities</button><button class="secondary" data-msg="Wave hello">Wave hello</button></div>
+  <p class="small">Voice recognition support depends on your browser and internet connection. Best tried in Chrome.</p>
+</section>
+</div>
+<div class="note"><b>Prototype note:</b> This is a free local demo with scripted replies, not a full AI model yet. A real AI API may cost money and its secret key must never be placed in public HTML. Physical movement needs hardware (controller, motors, battery and sensors), so with ₹0 we’ll simulate it first.</div>
+<p class="small">AI Udaan • Prototype v0.2 • Original v0.1 design preserved</p>
+</main>
+<script>
+const $ = id => document.getElementById(id);
+const chat = $('chat'), robot = $('robot'), status = $('status');
+function addMessage(who, text){
+ const p=document.createElement('p');p.className='msg';
+ const b=document.createElement('b');b.textContent=who+': ';
+ p.appendChild(b);p.appendChild(document.createTextNode(text));chat.appendChild(p);
+ while(chat.querySelectorAll('.msg').length>80){const first=chat.querySelector('.msg');if(first)first.remove();}
+ chat.scrollTop=chat.scrollHeight;
+}
+function speak(text){if(!('speechSynthesis' in window)){status.textContent='Speech output not supported in this browser';return;}speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(text);u.lang='hi-IN';u.rate=1;u.onstart=()=>robot.classList.add('talking');u.onend=()=>robot.classList.remove('talking');speechSynthesis.speak(u);}
+function replyFor(raw){const q=raw.toLowerCase();
+ if(q.includes('introduce')||q.includes('who are you')||q.includes('yourself'))return 'Namaste! Main Udaan-01 hoon, AI Udaan ka first robot prototype. Abhi main demo mode mein hoon.';
+ if(q.includes('joke'))return 'Robot ne chai kyun nahi pi? Kyunki uska system pehle se hi brew mode mein tha!';
+ if(q.includes('what can you do')||q.includes('capabilities')||q.includes('help'))return 'Main abhi simple questions ka demo jawab de sakta hoon, bolkar reply kar sakta hoon, aur animation dikha sakta hoon. Next step mein real AI aur hardware add kar sakte hain.';
+ if(q.includes('wave')||q.includes('hello')||q.includes('namaste')){robot.classList.remove('wave');void robot.offsetWidth;robot.classList.add('wave');return 'Namaste! AI Udaan ki taraf se hello!';}
+ if(q.includes('time'))return 'Aapke device par current time '+new Date().toLocaleTimeString()+ ' hai.';
+ if(q.includes('ai udaan'))return 'AI Udaan ka goal useful AI products banana hai. Yeh robot us vision ka ek chhota prototype hai.';
+ if(q.includes('thank'))return 'Aapka swagat hai! Chaliye AI Udaan robot ko step by step improve karte hain.';
+ return 'Achha sawaal! Main abhi scripted demo mode mein hoon, isliye mere paas full AI knowledge nahi hai. Real AI brain jodne ke liye baad mein secure backend aur AI model/API chahiye hoga.';
+}
+function send(text){const value=(text??$('prompt').value).trim();if(!value)return;$('prompt').value='';addMessage('You',value);const answer=replyFor(value);setTimeout(()=>{addMessage('Udaan',answer);speak(answer);status.textContent='● Replied in demo mode';},250);}
+$('send').addEventListener('click',()=>send());$('prompt').addEventListener('keydown',e=>{if(e.key==='Enter')send();});
+document.querySelectorAll('[data-msg]').forEach(b=>b.addEventListener('click',()=>send(b.dataset.msg)));
+$('stop').addEventListener('click',()=>{if('speechSynthesis'in window)speechSynthesis.cancel();robot.classList.remove('talking');status.textContent='● Speech stopped';});
+$('clear').addEventListener('click',()=>{
+ if('speechSynthesis'in window)speechSynthesis.cancel();
+ robot.classList.remove('talking','wave');
+ chat.replaceChildren();
+ addMessage('Udaan','Chat cleared. Namaste! Main AI Udaan ka demo robot hoon. Aap type karke ya microphone se baat kar sakte hain.');
+ status.textContent='● Chat cleared — demo mode';
+});
+const SpeechRecognition=window.SpeechRecognition||window.webkitSpeechRecognition;let recognition;
+if(SpeechRecognition){recognition=new SpeechRecognition();recognition.lang='hi-IN';recognition.interimResults=false;recognition.maxAlternatives=1;recognition.onstart=()=>status.textContent='● Listening… speak now';recognition.onresult=e=>{const said=e.results[0][0].transcript;$('prompt').value=said;send(said);};recognition.onerror=e=>status.textContent='Voice error: '+e.error+' — you can type instead';recognition.onend=()=>{if(status.textContent.includes('Listening'))status.textContent='● Ready';};}
+$('mic').addEventListener('click',()=>{if(!recognition){status.textContent='Speech recognition unavailable. Try Chrome or type your message.';return;}try{recognition.start();}catch(e){status.textContent='Microphone is already active. Try again in a moment.';}});
+</script>
+</body>
+</html>
